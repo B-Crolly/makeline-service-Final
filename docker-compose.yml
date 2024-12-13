@@ -13,25 +13,6 @@ services:
       retries: 5
     networks:
       - backend_services
-  rabbitmq:
-    image: rabbitmq:3.11.17-management-alpine
-    container_name: 'rabbitmq'
-    restart: always
-    environment:
-      - "RABBITMQ_DEFAULT_USER=username"
-      - "RABBITMQ_DEFAULT_PASS=password"
-    ports:
-      - 15672:15672
-      - 5672:5672
-    healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    volumes:
-      - ../../rabbitmq_enabled_plugins:/etc/rabbitmq/enabled_plugins
-    networks:
-      - backend_services
   order-service:
     image: ramymohamed/order-service-l8:latest
     container_name: 'order-service'
@@ -44,17 +25,15 @@ services:
       timeout: 10s
       retries: 5
     environment:
-      - ORDER_QUEUE_HOSTNAME=rabbitmq
-      - ORDER_QUEUE_PORT=5672
-      - ORDER_QUEUE_USERNAME=username
-      - ORDER_QUEUE_PASSWORD=password
+      - ORDER_QUEUE_HOSTNAME=labassign2namespace.servicebus.windows.net
+      - ORDER_QUEUE_PORT=5671
+      - ORDER_QUEUE_USERNAME=listener
+      - ORDER_QUEUE_PASSWORD= "this should be a secret lol"
       - ORDER_QUEUE_NAME=orders
       - ORDER_QUEUE_RECONNECT_LIMIT=3
+      - ORDER_QUEUE_TRANSPORT=tls
     networks:
       - backend_services
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
   virtual-customer:
     image: ramymohamed/virtual-customer-l8:latest
     container_name: 'virtual-customer'
